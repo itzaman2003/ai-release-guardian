@@ -1,0 +1,18 @@
+name: AI Release Guardian Quality Gate Demo
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_url:
+        description: GitHub pull request URL to analyze
+        required: true
+
+jobs:
+  guardian-quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call AI Release Guardian
+        run: |
+          echo "Demo step: call /analyze-pr and /quality-gate once backend is deployed."
+          echo "PR URL: ${{ inputs.pr_url }}"
+          echo "Fail this job when the API returns quality_gate=fail."
