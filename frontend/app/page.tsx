@@ -18,7 +18,6 @@ import {
   Sparkles,
   XCircle,
 } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { analyzePullRequest, fetchReports } from "@/lib/api";
 import type { AnalysisReport, GateStatus, Severity } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -98,6 +97,7 @@ export default function Home() {
   const activeReport = report;
   const summary = useMemo(() => buildSummary(history, activeReport), [history, activeReport]);
   const issueChart = useMemo(() => buildIssueChart(activeReport), [activeReport]);
+  const totalIssues = issueChart.reduce((total, item) => total + item.count, 0);
   const filteredIssues =
     activeReport?.issues.filter((issue) => severityFilter === "all" || issue.severity === severityFilter) ?? [];
 
@@ -194,23 +194,9 @@ export default function Home() {
             <div className="min-h-64 rounded-md border border-border bg-background p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold">Issue Severity</p>
-                {activeReport ? <SeverityBadge severity={activeReport.risk_level} /> : null}
+                <p className="text-xs font-medium text-muted-foreground">{totalIssues} total</p>
               </div>
-              <div className="h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={issueChart}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="severity" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip cursor={{ fill: "hsl(var(--muted))" }} />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                      {issueChart.map((item) => (
-                        <Cell key={item.severity} fill={severityChartColors[item.severity]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <SeverityBars data={issueChart} total={totalIssues} />
             </div>
           </div>
         </div>
@@ -367,6 +353,43 @@ function buildIssueChart(report: AnalysisReport | null) {
   return severityOrder.map((severity) => ({ severity, count: counts[severity] }));
 }
 
+function SeverityBars({ data, total }: { data: { severity: Severity; count: number }[]; total: number }) {
+  return (
+    <div className="mt-5 space-y-4">
+      {data.map((item) => {
+        const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
+        const width = item.count > 0 ? Math.max(percentage, 8) : 0;
+
+        return (
+          <div key={item.severity}>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: severityChartColors[item.severity] }} />
+                <span className="text-sm font-medium capitalize">{item.severity}</span>
+              </div>
+              <span className="text-sm font-semibold">
+                {item.count}
+                <span className="ml-2 text-xs font-medium text-muted-foreground">{percentage}%</span>
+              </span>
+            </div>
+            <div className="h-3 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${width}%`, backgroundColor: severityChartColors[item.severity] }}
+              />
+            </div>
+          </div>
+        );
+      })}
+      {total === 0 ? (
+        <div className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+          No issues detected yet.
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function SectionTitle({ icon: Icon, title }: { icon: typeof ShieldAlert; title: string }) {
   return (
     <div className="flex items-center gap-2">
@@ -397,7 +420,7 @@ function StatCard({
   };
 
   return (
-    <div className="rounded-md border border-border bg-card p-4 shadow-sm">
+    <div className="rounded-md border border-border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">{label}</p>

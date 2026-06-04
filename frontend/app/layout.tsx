@@ -18,14 +18,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <div className="min-h-screen bg-background">
-          <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-card px-5 py-6 lg:block">
+          <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-card px-5 py-6 shadow-sm lg:block">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <Activity className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-sm font-semibold">AI Release Guardian</p>
-                <p className="text-xs text-muted-foreground">Developer 2 Dashboard</p>
+                <p className="text-xs text-muted-foreground">Release review workspace</p>
               </div>
             </div>
             <nav className="mt-8 space-y-1">
@@ -48,9 +48,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <h1 className="text-lg font-semibold">Release Risk Command Center</h1>
                   <p className="text-sm text-muted-foreground">PR analysis, risk scoring, tests, notes, and CI/CD gate.</p>
                 </div>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  Day 1 mock contract
-                </span>
               </div>
             </header>
             {children}
