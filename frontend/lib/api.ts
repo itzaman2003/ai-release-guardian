@@ -1,6 +1,7 @@
 import type { AnalysisReport } from "@/lib/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
 
 export async function analyzePullRequest(prUrl: string): Promise<AnalysisReport> {
   const response = await guardianFetch("/analyze-pr", {
