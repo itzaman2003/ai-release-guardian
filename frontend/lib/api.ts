@@ -1,6 +1,6 @@
 import type { AnalysisReport } from "@/lib/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export async function analyzePullRequest(prUrl: string): Promise<AnalysisReport> {
   const response = await guardianFetch("/analyze-pr", {
@@ -35,6 +35,7 @@ async function guardianFetch(path: string, init?: RequestInit) {
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
   } catch {
-    throw new Error(`Backend is not reachable at ${API_BASE_URL}. Start the backend and refresh the page.`);
+    const target = API_BASE_URL || "the deployed API";
+    throw new Error(`Backend is not reachable at ${target}. Start the backend and refresh the page.`);
   }
 }
