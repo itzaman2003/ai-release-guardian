@@ -28,6 +28,18 @@ AI-Release-Guardian/
 3. Dashboard shows PR metadata, risk score, issues, tests, release notes, and rollback plan.
 4. Optional CI quality gate can pass, warn, or fail based on risk.
 
+## Backend API
+
+Developer 1 owns the FastAPI service contract:
+
+- `GET /health` returns service status.
+- `POST /analyze-pr` accepts a GitHub PR URL and returns an analysis report.
+- `GET /reports` returns recent analysis reports.
+- `GET /reports/{report_id}` returns one report.
+- `GET /reports/summary` returns dashboard counts.
+- `POST /quality-gate` evaluates risk score and issue counts into `pass`, `warn`, or `fail`.
+- `POST /releases/approve` approves a non-blocked report for authorized release roles.
+
 ## Run Locally
 
 Backend:
@@ -38,6 +50,14 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
+```
+
+Run backend tests:
+
+```bash
+cd backend
+source .venv/bin/activate
+pytest -q
 ```
 
 Frontend:

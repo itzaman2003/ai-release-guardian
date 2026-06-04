@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 };
 
 const navItems = [
-  { label: "Dashboard", icon: BarChart3 },
-  { label: "Analyze PR", icon: GitPullRequest },
-  { label: "Quality Gate", icon: ShieldCheck },
+  { label: "Dashboard", icon: BarChart3, href: "#dashboard" },
+  { label: "Analyze PR", icon: GitPullRequest, href: "#analyze-pr" },
+  { label: "Quality Gate", icon: ShieldCheck, href: "#quality-gate" },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,13 +30,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
             <nav className="mt-8 space-y-1">
               {navItems.map((item) => (
-                <div
+                <a
                   key={item.label}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground"
+                  href={item.href}
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                 >
                   <item.icon className="h-4 w-4" />
                   {item.label}
-                </div>
+                </a>
               ))}
             </nav>
           </aside>
