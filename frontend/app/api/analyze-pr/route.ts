@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildMockReport } from "@/lib/mock-report";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001";
 
 export async function POST(request: NextRequest) {
   const payload = (await request.json().catch(() => null)) as { pr_url?: string } | null;
@@ -12,7 +13,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json(buildMockReport(prUrl));
+  try {
+    const response = await fetch(`${BACKEND_URL}/analyze-pr`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pr_url: prUrl }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: "Analysis failed" }));
+      return NextResponse.json(error, { status: response.status });
+    }
+
+    return NextResponse.json(await response.json());
+  } catch (error) {
+    return NextResponse.json(
+      { detail: `Backend error: ${error instanceof Error ? error.message : "Unknown error"}` },
+      { status: 500 },
+    );
+  }
 }
 
 function isGithubPullRequestUrl(value: string) {

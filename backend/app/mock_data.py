@@ -1,3 +1,5 @@
+import re
+import httpx
 from .schemas import (
     AnalysisReport,
     GateStatus,
@@ -7,21 +9,74 @@ from .schemas import (
     Severity,
     TestSuggestion,
 )
+from .config import settings
+
+
+def _fetch_github_pr(pr_url: str) -> dict | None:
+    """Fetch real GitHub PR data from the API."""
+    # Parse URL: https://github.com/owner/repo/pull/number
+    match = re.match(r"https://github\.com/([^/]+)/([^/]+)/pull/(\d+)", pr_url)
+    if not match:
+        return None
+    
+    owner, repo, pr_number = match.groups()
+    
+    # Try to fetch from GitHub API
+    if not settings.github_token:
+        return None
+    
+    try:
+        headers = {
+            "Authorization": f"token {settings.github_token}",
+            "Accept": "application/vnd.github.v3+json",
+        }
+        response = httpx.get(
+            f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}",
+            headers=headers,
+            timeout=5,
+        )
+        if response.status_code == 200:
+            return response.json()
+    except Exception:
+        pass
+    
+    return None
 
 
 def build_mock_report(pr_url: str) -> AnalysisReport:
     repository = _repo_from_url(pr_url)
+    
+    # Try to fetch real GitHub data
+    github_pr = _fetch_github_pr(pr_url)
+    
+    if github_pr:
+        # Use real data from GitHub
+        title = github_pr.get("title", "Pull Request")
+        author = github_pr.get("user", {}).get("login", "unknown")
+        branch = github_pr.get("head", {}).get("ref", "main")
+        files_changed = github_pr.get("changed_files", 0)
+        additions = github_pr.get("additions", 0)
+        deletions = github_pr.get("deletions", 0)
+    else:
+        # Fallback to mock data
+        title = "Add release approval endpoint"
+        author = "developer-1"
+        branch = "feature/release-approval"
+        files_changed = 8
+        additions = 312
+        deletions = 74
+    
     return AnalysisReport(
         id="guardian-demo-001",
         pr=PullRequestMetadata(
             url=pr_url,
-            title="Add release approval endpoint",
-            author="developer-1",
+            title=title,
+            author=author,
             repository=repository,
-            branch="feature/release-approval",
-            files_changed=8,
-            additions=312,
-            deletions=74,
+            branch=branch,
+            files_changed=files_changed,
+            additions=additions,
+            deletions=deletions,
         ),
         summary=(
             "This PR adds a release approval API path and touches deployment-sensitive "

@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
-import { buildMockReport } from "@/lib/mock-report";
 
-export function GET() {
-  return NextResponse.json([buildMockReport("https://github.com/demo/ai-release-guardian/pull/42")]);
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001";
+
+export async function GET() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/reports`);
+
+    if (!response.ok) {
+      return NextResponse.json([], { status: 200 });
+    }
+
+    return NextResponse.json(await response.json());
+  } catch (error) {
+    return NextResponse.json([], { status: 200 });
+  }
 }
